@@ -2926,11 +2926,11 @@ function run() {
             const tarPath = yield io.which("tar", true);
             core.debug(`Tar Path: ${tarPath}`);
             yield exec_1.exec(`"${tarPath}"`, args);
-            const fileSizeLimit = 400 * 1024 * 1024; // 400MB
+            const fileSizeLimit = 5 * 1024 * 1024 * 1024; // 5GB per repo limit
             const archiveFileSize = utils.getArchiveFileSize(archivePath);
             core.debug(`File Size: ${archiveFileSize}`);
             if (archiveFileSize > fileSizeLimit) {
-                utils.logWarning(`Cache size of ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B) is over the 400MB limit, not saving cache.`);
+                utils.logWarning(`Cache size of ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B) is over the 5GB limit, not saving cache.`);
                 return;
             }
             yield cacheHttpClient.saveCache(primaryKey, archivePath);
