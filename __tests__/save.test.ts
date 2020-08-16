@@ -302,19 +302,15 @@ test("save with valid inputs uploads a cache", async () => {
 
 test("save skipped with restore only", async () => {
     const infoMock = jest.spyOn(core, "info");
+    const failedMock = jest.spyOn(core, "setFailed");
+    const saveCacheMock = jest.spyOn(cache, "saveCache");
 
     const primaryKey = "Linux-node-bb828da54c148048dd17899ba9fda624811cfb43";
-    const cacheEntry: ArtifactCacheEntry = {
-        cacheKey: "Linux-node-",
-        scope: "refs/heads/master",
-        creationTime: "2019-11-13T19:18:02+00:00",
-        archiveLocation: "www.actionscache.test/download"
-    };
-
+    const savedCacheKey = "Linux-node-";
     jest.spyOn(core, "getState")
         // Cache Entry State
         .mockImplementationOnce(() => {
-            return JSON.stringify(cacheEntry);
+            return savedCacheKey;
         })
         // Cache Key State
         .mockImplementationOnce(() => {
@@ -323,23 +319,15 @@ test("save skipped with restore only", async () => {
 
     const inputPath = "node_modules";
     testUtils.setInput(Inputs.Path, inputPath);
-    testUtils.setInput(Inputs.RestoreOnly, "true");
 
-    const cacheId = 4;
-    const reserveCacheMock = jest
-        .spyOn(cacheHttpClient, "reserveCache")
-        .mockImplementationOnce(() => {
-            return Promise.resolve(cacheId);
-        });
-
-    const saveCacheMock = jest.spyOn(cacheHttpClient, "saveCache");
+    const restoreOnly = "true";
+    testUtils.setInput(Inputs.RestoreOnly, restoreOnly);
 
     await run();
 
-    expect(infoMock).toHaveBeenCalledWith(
-        "Cache action configured for restore-only, skipping save step"
-    );
-
-    expect(reserveCacheMock).toHaveBeenCalledTimes(0);
     expect(saveCacheMock).toHaveBeenCalledTimes(0);
+    expect(failedMock).toHaveBeenCalledTimes(0);
+    expect(infoMock).toHaveBeenCalledWith(
+        `Cache action configured for restore-only, skipping save step.`
+    );
 });
