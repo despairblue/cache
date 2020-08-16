@@ -16,6 +16,14 @@ async function run(): Promise<void> {
             return;
         }
 
+        if (core.getInput(Inputs.SaveOnly) === "true") {
+            core.info(
+                "Cache action configured for save-only, skipping restore step."
+            );
+            utils.setCacheHitOutput(false);
+            return;
+        }
+
         const primaryKey = core.getInput(Inputs.Key, { required: true });
         core.saveState(State.CachePrimaryKey, primaryKey);
 

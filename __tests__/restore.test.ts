@@ -289,3 +289,35 @@ test("restore with cache found for restore key", async () => {
     );
     expect(failedMock).toHaveBeenCalledTimes(0);
 });
+
+test("restore skipped with save-only", async () => {
+    const path = "node_modules";
+    const key = "node-test";
+    testUtils.setInputs({
+        path: path,
+        key
+    });
+
+    const infoMock = jest.spyOn(core, "info");
+    const failedMock = jest.spyOn(core, "setFailed");
+    const stateMock = jest.spyOn(core, "saveState");
+    const setCacheHitOutputMock = jest.spyOn(actionUtils, "setCacheHitOutput");
+    const restoreCacheMock = jest
+        .spyOn(cache, "restoreCache")
+        .mockImplementationOnce(() => {
+            return Promise.resolve(key);
+        });
+
+    testUtils.setInput(Inputs.SaveOnly, "true");
+
+    await run();
+
+    expect(restoreCacheMock).toHaveBeenCalledTimes(0);
+    expect(stateMock).toHaveBeenCalledTimes(0);
+    expect(setCacheHitOutputMock).toHaveBeenCalledTimes(1);
+    expect(setCacheHitOutputMock).toHaveBeenCalledWith(false);
+    expect(infoMock).toHaveBeenCalledWith(
+        "Cache action configured for save-only, skipping restore step."
+    );
+    expect(failedMock).toHaveBeenCalledTimes(0);
+});
